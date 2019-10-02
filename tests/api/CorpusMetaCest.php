@@ -10,7 +10,7 @@ class CorpusMetaCest
     public function tryToListLanguages(ApiTester $I)
     {
         $I->wantTo("List languages in a corpus");
-        $I->sendGet("http://nexthammer.test/api/v1/corpora/pest_inter/languages");
+        $I->sendGet("http://localhost:8000/api/v1/corpora/pest_inter/languages");
         $I->seeResponseIsJson();
     }
 }

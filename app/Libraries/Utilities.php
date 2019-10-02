@@ -5,7 +5,9 @@ class Utilities {
     public static function open_connection($db_name) {
       $user = env("DB_USERNAME", true);
       $password = env("DB_PASSWORD", true);
-      $dbconn = pg_connect("dbname=$db_name user=$user password=$password host=localhost")
+      $host = env("DB_HOST", true);
+      $port = env("DB_PORT", true);
+      $dbconn = pg_connect("dbname=$db_name user=$user password=$password host=$host port=$port")
         or die('Could not connect: ' . pg_last_error());
       return $dbconn;
     }

@@ -7,3 +7,7 @@ modules:
     enabled:
         - Asserts
         - \Helper\Unit
+    config: 
+        - environment_file: .env.testing
+        - Lumen: 
+          - environment_file: .env.testing

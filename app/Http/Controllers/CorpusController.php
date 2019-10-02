@@ -1,5 +1,5 @@
 <?php
-/** 
+/**
  * Controller for corpora
  *
  * PHP version 7.2
@@ -15,6 +15,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Corpusobjects\Corpus;
+use App\Corpusactions\Concordancer;
 
 /**
  * Controller for (sub)corpora
@@ -27,12 +28,10 @@ use App\Corpusobjects\Corpus;
  */
 class CorpusController extends Controller
 {
-
-
     /**
      * Sets a single corpus to be used for some action.
      */
-    private function setCorpus(String $corpusname, String $lang, Array $codes)
+    private function setCorpus(string $corpusname, string $lang, array $codes)
     {
         $this->corpus = new Corpus();
         $this->corpus
@@ -40,41 +39,37 @@ class CorpusController extends Controller
             ->SetConnectionToCorpus()
             ->SetConnectionToMain()
             ->SetStopWords();
-        if($codes){
+        if ($codes) {
             $this->corpus->SetSubCorpus($codes, $lang);
         }
     }
 
-
-
-    /**  
+    /**
      * Lists all available corpora
      *
      * @return response as a json array
      */
     public function index()
     {
-
         //Just a mock for now...
 
-        return ['response' => 
-            [
-                'title' => 'pest_inter',
+        return [
+            'response' => [
+                'title' => 'pest_inter'
             ]
         ];
     }
 
-    /**  
+    /**
      * Lists all languages in a specific corpus
      *
      * @return response as a json array
      */
-    public function listLanguages(String $name)
+    public function listLanguages(string $name)
     {
-
-        return ['response' => 
-            [
-                'corpusname' => $name,
+        return [
+            'response' => [
+                'corpusname' => $name
             ]
         ];
     }
@@ -84,11 +79,12 @@ class CorpusController extends Controller
      *
      * @return response as a json array
      */
-    public function frequencyList(String $name, String $lang,  Request $request)
+    public function frequencyList(string $name, string $lang, Request $request)
     {
         $codes = $request->query("codes");
         $this->setCorpus($name, $lang, $codes);
-        $this->corpus->SetNounFrequencyByLemma()
+        $this->corpus
+            ->SetNounFrequencyByLemma()
             ->CountAllWords()
             ->CreateFrequencyTableForTopicWords();
         //if(isset($_GET["bylang"])){
@@ -99,5 +95,25 @@ class CorpusController extends Controller
         return $this->corpus->GetData();
     }
 
-
+    /**
+     * Runs a concordance query in a certain subcorpus
+     *
+     * @return response as a json array
+     */
+    public function concordance(
+        string $name,
+        string $lang,
+        string $word,
+        Request $request
+    ): array {
+        $codes = $request->query("codes");
+        $this->setCorpus($name, $lang, $codes);
+        $this->corpus->SetFilter();
+        $this->corpus->filter->Tokens();
+        $this->corpus->SetLang($lang);
+        $conc = new Concordancer($this->corpus);
+        $conc->GetHitIds($word);
+        $conc->GetConcForHits();
+        return $conc->output();
+    }
 }
